@@ -1,6 +1,7 @@
 # dotfiles
 
 Settings for nvim (Neovim 0.12 / vim.pack), herdr, and zsh.
+Keys and commands worth remembering: [CHEATSHEET.md](CHEATSHEET.md).
 
 ## Setup
 
