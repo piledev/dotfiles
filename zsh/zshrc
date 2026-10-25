@@ -1,0 +1,40 @@
+# どの PC でも使う zsh 設定。PC 固有・業務用の設定は ~/.zshrc.local に書く（リポジトリには入れない）
+
+# oh-my-zsh
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="amuse"
+plugins=(
+  git
+  dotenv
+  zsh-autosuggestions
+)
+[ -f "$ZSH/oh-my-zsh.sh" ] && source "$ZSH/oh-my-zsh.sh"
+
+# Homebrew
+typeset -U path PATH
+path=(
+  /opt/homebrew/bin(N-/)
+  /opt/homebrew/sbin(N-/)
+  /usr/bin
+  /usr/sbin
+  /bin
+  /sbin
+  /usr/local/bin(N-/)
+  /usr/local/sbin(N-/)
+  /Library/Apple/usr/bin
+)
+
+# PC 固有の設定。下の mise や ~/.local/bin より PATH の優先度を低くしたいのでここで読む
+[ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
+
+ssh-add ~/.ssh/id_rsa > /dev/null 2>&1
+ssh-add ~/.ssh/id_ed25519 > /dev/null 2>&1
+
+# Personal aliases
+alias tm="tmux"
+alias nv="nvim"
+
+command -v direnv > /dev/null && eval "$(direnv hook zsh)"
+command -v mise > /dev/null && eval "$(mise activate zsh)"
+
+export PATH="$HOME/.local/bin:$PATH"
