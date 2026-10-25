@@ -1,4 +1,4 @@
-# どの PC でも使う zsh 設定。PC 固有・業務用の設定は ~/.zshrc.local に書く（リポジトリには入れない）
+# zsh settings shared by every machine. Put machine-specific and work settings in ~/.zshrc.local (not tracked in the repo)
 
 export LANG=en_US.UTF-8
 
@@ -26,7 +26,7 @@ path=(
   /Library/Apple/usr/bin
 )
 
-# PC 固有の設定。下の mise や ~/.local/bin より PATH の優先度を低くしたいのでここで読む
+# Machine-specific settings. Sourced here so their PATH entries rank below mise and ~/.local/bin
 [ -f "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"
 
 ssh-add ~/.ssh/id_rsa > /dev/null 2>&1

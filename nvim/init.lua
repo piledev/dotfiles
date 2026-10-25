@@ -1,13 +1,13 @@
--- 読む・飛ぶ・tree・Markdown に絞った最小構成（Neovim 0.12 / vim.pack）
+-- Minimal setup for reading, jumping, tree, and Markdown (Neovim 0.12 / vim.pack)
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
--- nvim-tree と競合するので netrw は無効化
+-- Disable netrw because it conflicts with nvim-tree
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
--- 基本設定 -------------------------------------------------------------
+-- Basics ---------------------------------------------------------------
 vim.o.number = true
 vim.o.signcolumn = 'yes'
 vim.o.cursorline = true
@@ -20,7 +20,7 @@ vim.o.splitright = true
 vim.o.splitbelow = true
 vim.o.updatetime = 300
 
--- Claude Code が書き換えたファイルを自動で読み直す
+-- Automatically reload files rewritten by Claude Code
 vim.o.autoread = true
 vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold' }, {
   callback = function()
@@ -28,8 +28,8 @@ vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter', 'CursorHold' }, {
   end,
 })
 
--- プラグイン -----------------------------------------------------------
--- nvim-treesitter はインストール・更新時にパーサーを更新する
+-- Plugins --------------------------------------------------------------
+-- nvim-treesitter updates its parsers on install and update
 vim.api.nvim_create_autocmd('PackChanged', {
   callback = function(ev)
     local name, kind = ev.data.spec.name, ev.data.kind
@@ -52,27 +52,27 @@ vim.pack.add({
   gh('MeanderingProgrammer/render-markdown.nvim'),
 })
 
--- ファイル検索・文字列検索 ---------------------------------------------
+-- Find files and text --------------------------------------------------
 local fzf = require('fzf-lua')
 fzf.setup({})
-vim.keymap.set('n', '<leader><leader>', fzf.files, { desc = 'ファイルを開く' })
-vim.keymap.set('n', '<leader>/', fzf.live_grep, { desc = '文字列検索' })
-vim.keymap.set('n', '<leader>fw', fzf.grep_cword, { desc = 'カーソル下の単語を検索' })
-vim.keymap.set('n', '<leader>fb', fzf.buffers, { desc = '開いているバッファ' })
-vim.keymap.set('n', '<leader>fr', fzf.oldfiles, { desc = '最近開いたファイル' })
-vim.keymap.set('n', '<leader>fs', fzf.lsp_document_symbols, { desc = 'ファイル内のシンボル' })
-vim.keymap.set('n', '<leader>fh', fzf.helptags, { desc = 'ヘルプ' })
+vim.keymap.set('n', '<leader><leader>', fzf.files, { desc = 'Find files' })
+vim.keymap.set('n', '<leader>/', fzf.live_grep, { desc = 'Live grep' })
+vim.keymap.set('n', '<leader>fw', fzf.grep_cword, { desc = 'Grep word under cursor' })
+vim.keymap.set('n', '<leader>fb', fzf.buffers, { desc = 'Open buffers' })
+vim.keymap.set('n', '<leader>fr', fzf.oldfiles, { desc = 'Recent files' })
+vim.keymap.set('n', '<leader>fs', fzf.lsp_document_symbols, { desc = 'Document symbols' })
+vim.keymap.set('n', '<leader>fh', fzf.helptags, { desc = 'Help tags' })
 
--- tree 表示 ------------------------------------------------------------
+-- Tree view ------------------------------------------------------------
 require('nvim-tree').setup({
   view = { width = 35 },
   update_focused_file = { enable = true },
   filters = { git_ignored = false },
 })
-vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeFindFileToggle<cr>', { desc = 'tree を開閉' })
+vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeFindFileToggle<cr>', { desc = 'Toggle tree' })
 
--- LSP（定義ジャンプ）-----------------------------------------------------
--- サーバー本体は brew で入れる: gopls / typescript-language-server / marksman
+-- LSP (go to definition) -------------------------------------------------
+-- Install the servers with brew: gopls / typescript-language-server / marksman
 vim.lsp.enable({ 'gopls', 'ts_ls', 'marksman' })
 
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -80,18 +80,18 @@ vim.api.nvim_create_autocmd('LspAttach', {
     local map = function(lhs, rhs, desc)
       vim.keymap.set('n', lhs, rhs, { buffer = ev.buf, desc = desc })
     end
-    -- K（ホバー）、grn（リネーム）、gra（コードアクション）は Neovim 標準
-    map('gd', fzf.lsp_definitions, '定義へ')
-    map('grr', fzf.lsp_references, '参照一覧')
-    map('gri', fzf.lsp_implementations, '実装一覧')
-    map('gy', fzf.lsp_typedefs, '型定義へ')
+    -- K (hover), grn (rename), and gra (code action) are Neovim defaults
+    map('gd', fzf.lsp_definitions, 'Go to definition')
+    map('grr', fzf.lsp_references, 'List references')
+    map('gri', fzf.lsp_implementations, 'List implementations')
+    map('gy', fzf.lsp_typedefs, 'Go to type definition')
   end,
 })
 
 vim.diagnostic.config({ virtual_text = true })
 
--- シンタックスハイライト ------------------------------------------------
--- markdown 系のパーサーは Neovim 本体に同梱されている
+-- Syntax highlighting ---------------------------------------------------
+-- Markdown parsers ship with Neovim
 require('nvim-treesitter').install({
   'go', 'gomod', 'gosum', 'typescript', 'tsx', 'javascript',
   'json', 'yaml', 'toml', 'sql', 'bash', 'html', 'css', 'dockerfile', 'diff',
@@ -100,29 +100,29 @@ vim.api.nvim_create_autocmd('FileType', {
   callback = function(ev) pcall(vim.treesitter.start, ev.buf) end,
 })
 
--- git の変更箇所 --------------------------------------------------------
+-- Git changes -----------------------------------------------------------
 require('gitsigns').setup({
   on_attach = function(buf)
     local gs = require('gitsigns')
     local map = function(lhs, rhs, desc)
       vim.keymap.set('n', lhs, rhs, { buffer = buf, desc = desc })
     end
-    map(']h', function() gs.nav_hunk('next') end, '次の変更箇所')
-    map('[h', function() gs.nav_hunk('prev') end, '前の変更箇所')
-    map('<leader>hp', gs.preview_hunk, '変更内容を表示')
-    map('<leader>hb', gs.blame_line, 'この行の blame')
+    map(']h', function() gs.nav_hunk('next') end, 'Next hunk')
+    map('[h', function() gs.nav_hunk('prev') end, 'Previous hunk')
+    map('<leader>hp', gs.preview_hunk, 'Preview hunk')
+    map('<leader>hb', gs.blame_line, 'Blame line')
   end,
 })
 
--- 変更ファイルの tree + 左右比較（VS Code のソース管理に相当）
--- ブランチ全体の差分は :DiffviewOpen origin/main...HEAD
+-- Changed-file tree + side-by-side diff (like VS Code's Source Control)
+-- Diff of the whole branch: :DiffviewOpen origin/main...HEAD
 require('diffview').setup({})
-vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewOpen<cr>', { desc = '作業中の差分を開く' })
-vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', { desc = 'このファイルの変更履歴' })
-vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>', { desc = '差分を閉じる' })
+vim.keymap.set('n', '<leader>gd', '<cmd>DiffviewOpen<cr>', { desc = 'Open working tree diff' })
+vim.keymap.set('n', '<leader>gh', '<cmd>DiffviewFileHistory %<cr>', { desc = 'File history' })
+vim.keymap.set('n', '<leader>gq', '<cmd>DiffviewClose<cr>', { desc = 'Close diff' })
 
 -- Markdown ---------------------------------------------------------------
--- ノーマルモードでは整形表示、カーソル行と挿入モードでは生の記法が見える
+-- Rendered in normal mode; raw syntax on the cursor line and in insert mode
 require('render-markdown').setup({})
 vim.api.nvim_create_autocmd('FileType', {
   pattern = 'markdown',
@@ -131,4 +131,4 @@ vim.api.nvim_create_autocmd('FileType', {
     vim.opt_local.linebreak = true
   end,
 })
-vim.keymap.set('n', '<leader>m', '<cmd>RenderMarkdown toggle<cr>', { desc = 'Markdown 整形表示の切替' })
+vim.keymap.set('n', '<leader>m', '<cmd>RenderMarkdown toggle<cr>', { desc = 'Toggle Markdown rendering' })

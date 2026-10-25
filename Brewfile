@@ -8,7 +8,7 @@ brew "bat"
 brew "tree"
 brew "tree-sitter-cli"
 
-# LSP サーバー
+# LSP servers
 brew "gopls"
 brew "typescript-language-server"
 brew "marksman"
