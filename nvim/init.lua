@@ -62,12 +62,22 @@ vim.keymap.set('n', '<leader>fb', fzf.buffers, { desc = 'Open buffers' })
 vim.keymap.set('n', '<leader>fr', fzf.oldfiles, { desc = 'Recent files' })
 vim.keymap.set('n', '<leader>fs', fzf.lsp_document_symbols, { desc = 'Document symbols' })
 vim.keymap.set('n', '<leader>fh', fzf.helptags, { desc = 'Help tags' })
+vim.keymap.set('n', '<leader>fk', fzf.keymaps, { desc = 'Search keymaps' })
 
 -- Tree view ------------------------------------------------------------
 require('nvim-tree').setup({
   view = { width = 35 },
   update_focused_file = { enable = true },
   filters = { git_ignored = false },
+  on_attach = function(buf)
+    local api = require('nvim-tree.api')
+    api.config.mappings.default_on_attach(buf)
+    local map = function(lhs, rhs, desc)
+      vim.keymap.set('n', lhs, rhs, { buffer = buf, desc = desc, nowait = true })
+    end
+    map('l', api.node.open.edit, 'Expand folder / open file')
+    map('h', api.node.navigate.parent_close, 'Collapse to parent folder')
+  end,
 })
 vim.keymap.set('n', '<leader>e', '<cmd>NvimTreeFindFileToggle<cr>', { desc = 'Toggle tree' })
 
@@ -113,6 +123,46 @@ require('gitsigns').setup({
     map('<leader>hb', gs.blame_line, 'Blame line')
   end,
 })
+vim.keymap.set('n', '<leader>gb', fzf.git_branches, { desc = 'Git branches' })
+
+-- Statusline: branch and change counts from gitsigns, e.g. "[main +3 ~1] init.lua"
+-- In the file tree, the branch of the tree root replaces the buffer name
+local escape = function(s) return (s:gsub('%%', '%%%%')) end
+
+-- Cached per tree root; cleared on focus/buffer changes to pick up branch switches
+local tree_branches = {}
+vim.api.nvim_create_autocmd({ 'FocusGained', 'BufEnter' }, {
+  callback = function() tree_branches = {} end,
+})
+
+local function tree_branch()
+  local root = require('nvim-tree.core').get_cwd()
+  if not root then return '' end
+  if tree_branches[root] == nil then
+    local result = vim.system({ 'git', '-C', root, 'branch', '--show-current' }, { text = true }):wait()
+    tree_branches[root] = result.code == 0 and vim.trim(result.stdout) or ''
+  end
+  return tree_branches[root]
+end
+
+-- Falls back to the cwd's branch for an empty buffer (e.g. plain `nvim`)
+local function buffer_git()
+  local head = vim.b.gitsigns_head
+  if not head and vim.bo.buftype == '' then head = vim.g.gitsigns_head end
+  if not head or head == '' then return '' end
+  local status = vim.b.gitsigns_status
+  if status and status ~= '' then head = head .. ' ' .. status end
+  return '[' .. escape(head) .. '] '
+end
+
+function _G.statusline()
+  if vim.bo.filetype == 'NvimTree' then
+    local branch = tree_branch()
+    return branch ~= '' and '[' .. escape(branch) .. ']' or ''
+  end
+  return buffer_git() .. '%<%f %h%w%m%r%=%-14.(%l,%c%V%) %P'
+end
+vim.o.statusline = '%{%v:lua.statusline()%}'
 
 -- Changed-file tree + side-by-side diff (like VS Code's Source Control)
 -- Diff of the whole branch: :DiffviewOpen origin/main...HEAD
