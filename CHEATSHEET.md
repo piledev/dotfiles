@@ -88,7 +88,7 @@ Leader is `Space`.
 | `<Space>e` | Toggle file tree |
 
 In a picker: `Enter` open, `Ctrl-v` / `Ctrl-s` open in vertical / horizontal split.
-In the tree: `l` expand / open, `h` collapse to parent, `a` add, `r` rename, `d` delete, `g?` help.
+In the tree: `l` expand / open, `h` collapse to parent, `a` add, `r` rename, `d` delete, `f` / `F` filter / clear filter, `Ctrl-]` / `-` set root here / root up, `g?` help.
 Move between tree and editor: `Ctrl-w h` to the tree, `Ctrl-w p` back (`<Space>e` closes an open tree instead of focusing it).
 
 ### Code (LSP)
